@@ -18,13 +18,23 @@
 module load anaconda3
 conda activate CAI_SO_FUN
 
-FRACTION="${1:?Usage: sbatch slurm/train_bilstm.sbatch <fraction>}"
+FRACTION="${1:-1.00}"
+DROPOUT="${2:-0.0}"
+HIDDEN_DIM="${3:-128}"
 
-# Part A CRF doesn't need a GPU. Run it locally or on a login node instead.
-# This job is for Part B BiLSTM.
+RUN_NAME="bilstm_f${FRACTION}_d${DROPOUT}_h${HIDDEN_DIM}"
+
+echo "Training configuration:"
+echo "  fraction   = ${FRACTION}"
+echo "  dropout    = ${DROPOUT}"
+echo "  hidden_dim = ${HIDDEN_DIM}"
+echo "  run_name   = ${RUN_NAME}"
+
 python train.py \
     --model bilstm \
     --train-fraction "${FRACTION}" \
-    --checkpoint-dir "checkpoints/bilstm_${FRACTION}" \
+    --checkpoint-dir "checkpoints/${RUN_NAME}" \
     --seed 42 \
-    --tensorboard-logdir "runs/bilstm_${FRACTION}"
+    --dropout "${DROPOUT}" \
+    --hidden-dim "${HIDDEN_DIM}" \
+    --tensorboard-logdir "runs/${RUN_NAME}"
