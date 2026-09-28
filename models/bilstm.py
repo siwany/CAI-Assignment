@@ -20,7 +20,8 @@ class BiLSTMModel(nn.Module):
         vocab_size: int,
         tagset_size: int,
         embedding_dim: int = 100,
-        hidden_dim: int = 256,
+        hidden_dim: int = 128,
+        dropout: float = 0.0,
     ) -> None:
         """Define the model's layers per the README's architecture:
         embeddings -> BiLSTM -> per-token softmax.
@@ -40,6 +41,7 @@ class BiLSTMModel(nn.Module):
             bidirectional=True,
             batch_first=True,
         )
+        self.dropout = nn.Dropout(dropout)
         self.hidden2tag = nn.Linear(2 * hidden_dim, tagset_size)
 
         # Optional +5 bonus: a handwritten CRF decoding layer (forward/Viterbi)
@@ -78,7 +80,7 @@ class BiLSTMModel(nn.Module):
         lstm_output, _ = nn.utils.rnn.pad_packed_sequence(
             packed_output, batch_first=True, total_length=sentences_batch.size(1),
         )
-        logits = self.hidden2tag(lstm_output)
+        logits = self.hidden2tag(self.dropout(lstm_output))
         return logits
 
     def viterbi_decode(

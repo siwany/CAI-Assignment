@@ -95,7 +95,8 @@ def load_model(model_type: str, checkpoint_dir: str) -> Any:
             vocab_size=checkpoint["vocab_size"],
             tagset_size=checkpoint["tagset_size"],
             embedding_dim=checkpoint.get("embedding_dim", 100),
-            hidden_dim=checkpoint.get("hidden_dim", 256),
+            hidden_dim=checkpoint.get("hidden_dim", 128),
+            dropout=checkpoint.get("dropout", 0.0),
         )
 
         model.load_state_dict(checkpoint["state_dict"])

@@ -56,6 +56,20 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--dropout",
+        type=float,
+        default=0.0,
+        help="BiLSTM dropout probability (default: 0.0).",
+    )
+
+    parser.add_argument(
+        "--hidden-dim",
+        type=int,
+        default=128,
+        help="BiLSTM hidden size per direction (default: 128).",
+    )
+
+    parser.add_argument(
         "--tensorboard-logdir",
         type=str,
         default=None,
@@ -147,6 +161,8 @@ def build_model(
     model_type: str,
     vocab_size: int | None = None,
     tagset_size: int | None = None,
+    dropout: float = 0.0,
+    hidden_dim: int = 128,
 ) -> Any:
     """Construct an untrained model instance for the given model type.
 
@@ -169,7 +185,12 @@ def build_model(
                 "vocab_size and tagset_size are required for model_type='bilstm'"
             )
 
-        return BiLSTMModel(vocab_size=vocab_size, tagset_size=tagset_size)
+        return BiLSTMModel(
+            vocab_size=vocab_size,
+            tagset_size=tagset_size,
+            dropout=dropout,
+            hidden_dim=hidden_dim,
+        )
 
     raise ValueError(f"Unknown model type: {model_type!r}")
 
@@ -328,6 +349,7 @@ def train_loop(
                 "tagset_size": len(tag_names),
                 "embedding_dim": model.embedding.embedding_dim,
                 "hidden_dim": model.lstm.hidden_size,
+                "dropout": model.dropout.p,
                 "vocab": {
                     "token_to_id": vocab.token_to_id,
                     "id_to_tag": vocab.id_to_tag,
@@ -348,7 +370,11 @@ def main() -> None:
 
     if args.model == "bilstm":
         model = build_model(
-            args.model, vocab_size=vocab["vocab_size"], tagset_size=vocab["tagset_size"]
+            args.model,
+            vocab_size=vocab["vocab_size"],
+            tagset_size=vocab["tagset_size"],
+            dropout=args.dropout,
+            hidden_dim=args.hidden_dim,
         )
 
     else:
